@@ -35,7 +35,7 @@ function dencButtonClick(){
     var data = document.querySelector('#data');
 
     decrypt(data.value).then( (data) => {
-        document.querySelector('#result').value = new TextDecoder().decode(data) ;
+        document.querySelector('#result').value = byteArrayToString(data) ;
     }, (reason) => {
         console.log(reason);
     });
