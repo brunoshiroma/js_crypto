@@ -1,16 +1,43 @@
 var subCrypto = crypto.subtle;
 
-function initCrypt(){
-    if(!subCrypto.initialized){
+function initCrypt(jwk, iv){
+
+    var callbacksuccess = function(cryptoKey){
+        subCrypto.key = cryptoKey;
+        var ivText = document.querySelector('#iv');
+        var keyText = document.querySelector('#key');
+        
+        subCrypto.exportKey('jwk', cryptoKey).then(
+            (key) => {
+                ivText.value = arrayBufferToHex(subCrypto.initBuffer);
+                keyText.value = JSON.stringify(key);
+            }, (reason) => {
+                console.log(reason);
+            });
+    }
+
+    if(jwk){
+        var jsonJwk = JSON.parse(jwk);
+        subCrypto.initBuffer = toByteArray(iv);
+        subCrypto.importKey('jwk', jsonJwk, { name : 'AES-CBC', length : 256}, true, ['encrypt', 'decrypt']).then(
+            callbacksuccess,
+            (reason) => {
+
+            }
+        );
+    }
+    else if(!subCrypto.initialized){
         var buffer = new Uint8Array(16);
         crypto.getRandomValues(buffer);
         subCrypto.initBuffer = buffer;
         subCrypto.initialized = true;
 
         subCrypto.generateKey({ name : 'AES-CBC', length : 256}, true, ['encrypt', 'decrypt']).
-        then( (cryptoKey) => {
-            subCrypto.key = cryptoKey;
-        }, (reason) => {} );
+        then( 
+            callbacksuccess, 
+            (reason) => {
+            console.log(reason);
+        } );
     }
 }
 
